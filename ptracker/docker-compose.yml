@@ -1,0 +1,18 @@
+version: '3'
+services:
+  tracker:
+    container_name: tracker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - TRACKER_IP=172.20.0.6:5000
+    networks:
+      mynet:
+        ipv4_address: 172.20.0.6
+networks:
+  mynet:
+    external:
+      name: mynet

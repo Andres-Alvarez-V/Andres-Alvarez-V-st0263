@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+message LoginRequest {
+  string url = 1;
+}
+
+message LoginResponse {
+  string peerIdentifier = 1;
+}
+
+message LogoutRequest {
+  string peerIdentifier = 1;
+}
+
+message LogoutResponse {
+  string message = 1;
+}
+
+message SearchFileRequest {
+  string filename = 1;
+}
+
+message SearchFileResponse {
+  repeated string peers  = 1;
+}
+
+message IndexFilesRequest {
+  repeated string filenames = 1;
+  string peerIdentifier = 2;
+}
+
+message IndexFilesResponse {
+  string message = 1;
+}
+
+service Tracker {
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+  rpc Logout (LogoutRequest) returns (LogoutResponse) {}
+  rpc SearchFile (SearchFileRequest) returns (SearchFileResponse) {}
+  rpc IndexFiles (IndexFilesRequest) returns (IndexFilesResponse) {}
+}
+
