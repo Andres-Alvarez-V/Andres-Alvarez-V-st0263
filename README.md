@@ -1,12 +1,8 @@
-# info de la materia: st0263 <nombre>
+# Info de la materia: st0263 <nombre>
 #
 # Estudiante(s): Andres Camilo Alvarez Vasquez, acalvarezv@eafit.edu.co
 #
 # Profesor: Alvaro Ospina, aeospinas@eafit.edu.co
-#
-# <para borrar: EL OBJETIVO DE ESTA DOCUMENTACÍON ES QUE CUALQUIER LECTOR CON EL REPO, EN ESPECIAL EL PROFESOR, ENTIENDA EL ALCANCE DE LO DESARROLLADO Y QUE PUEDA REPRODUCIR SIN EL ESTUDIANTE EL AMBIENTE DE DESARROLLO Y EJECUTAR Y USAR LA APLICACIÓN SIN PROBLEMAS>
-
-# <para borrar: renombre este archivo a README.md cuando lo vaya a usar en un caso específico>
 
 # P2P - Comunicación entre procesos mediante API REST, RPC y MOM
 #
@@ -35,13 +31,49 @@ Adicionalmente se agrega los servicios expuestos de cada uno de los componentes 
 
 Atraves del contrato definido con gRPC el tracker expone los metodos de login, logout, buscada de archivos y indexacion de archivos. Por otro lado el hace peer uso del contrato para consusmir los metodos y hacer el papel de cliente. 
 
-El codigo tambien esta estructurado de manera que se pueda hacer uso de docker para simular una red P2P con multiples peers y un tracker. Ademas dentro del peer y tracker se tiene una estructura parecida a la de un proyecto de node.js, con el fin de que sea mas facil de entender y de mantener. Se tiene los controladores, repositorios, rutas y inicializacion del servidor.
 
 # 3. Descripción del ambiente de desarrollo y técnico: lenguaje de programación, librerias, paquetes, etc, con sus numeros de versiones.
 
 El lenguaje de programación utilizado fue Node.js, se utilizo el framework express para el desarrollo del servidor y el cliente peer. Ademas se utilizo el paquete grpc para la comunicacion entre el tracker y los peers. El servidor del tracker se creo haciendo uso de la libreria de GRPC y el cliente peer se creo haciendo uso de la libreria de GRPC y express, dado que el peer debe tener un servidor http para recibir las peticiones de los demas peers.
 
 ## Como se compila y ejecuta.
+
+Para compilar y ejecutar el proyecto se debe hacer uso de docker y docker-compose. Se debe tener instalado docker y docker-compose en el equipo. Luego se debe clonar el repositorio y ejecutar el siguiente comando en la raiz del proyecto:
+
+```bash
+docker network create --subnet=172.20.0.0/28 mynet
+```
+
+En este caso de ejemplo nombramos la red como `mynet` tener en cuenta que el nombre puede ser cualquiera, pero debe concordar con el nombre de la red en el archivo `./peer/docker-compose.yml` y `./ptracker/docker-compose.yml`.
+
+Cuando ya se tenga la red creada se debe ejecutar el siguiente comando en cada componente del proyecto para levantar el tracker y el conjunto de peers, todo esto estara conectado en una misma red lo que facilita en gran medida la comunicacion entre los componentes para la simulacion del ambiente en local.
+
+```bash
+cd ptracker
+docker-compose up --build
+```
+
+Primero debemos levantar el tracker y luego los peers, para que los peers puedan conectarse al tracker. 
+Ahora nos paramos en la raiz del proyecto de nuevo y luego
+```bash
+cd peer
+docker-compose up --build
+
+```
+
+Con lo anterior ya seria suficiente.
+
+Tanto el tracker como el peer tienen un sistema de loguer que permite ver de manera mas clara el comportamiento de los componentes. 
+Dentro del tracker se puede observar el loguer en la consola de la terminal donde se ejecuta el comando de levantar el tracker.
+Alli se puede observar el puerto en que corre el tracker y conforme cada peer se conecta al tracker se puede observar el loguer de la conexion del peer al tracker, luego se evidencia el loguer de la indexacion de los archivos del peer, a cada peer se le asigna un id unico, cada archivo tiene una lista de peers que lo contienen y el tracker tiene una lista de los peers que estan conectados a el.
+
+Por otro lado, el peer tiene un loguer que se puede observar en la consola de la terminal donde se ejecuta el comando de levantar el peer. Alli se puede observar el puerto en que corre el peer y conforme el peer se conecta al tracker se puede observar el loguer de la conexion del peer al tracker, luego cuando se busca descargar un archivo se ve el loguer de la busqueda del archivo y la descarga del archivo.
+
+## Dependencias
+
+Dado que se esta usando docker para la simulacion de la red P2P, no se tiene que instalar ninguna dependencia en el equipo, dado que todo se ejecuta en contenedores de docker. Sin embargo se debe tener instalado docker y docker-compose en el equipo.
+
+En caso de querer entender cada componente que paquetes usa se puede obsercar en el archivo `package.json` en el apartado de dependncias de cada uno de los componentes del proyecto.
 
 
 ## Detalles del desarrollo.
@@ -76,19 +108,52 @@ A nivel de base de datos no se tiene una conexion con base de datos como tal, lo
 Por otro lado, gracias al uso de docker compose se puede configurar el puerto de cada uno de los servicios, el cual se puede configurar en el archivo docker-compose.yml. Ademas se puede configurar el numero de peers que se quieren simular en la red P2P, el cual se puede configurar en el archivo docker-compose.yml. Siendo este archivo el punto central para la configuracion de la red P2P.
 
 ## opcional - detalles de la organización del código por carpetas o descripción de algún archivo. (ESTRUCTURA DE DIRECTORIOS Y ARCHIVOS IMPORTANTE DEL PROYECTO, comando 'tree' de linux)
+![Servicios de los componentes P2P](./images/tree-files-telematica.png)
 
 
+El codigo tambien esta estructurado de manera que se pueda hacer uso de docker para simular una red P2P con multiples peers y un tracker. Ademas dentro del peer y tracker se tiene una estructura parecida a la de un proyecto de node.js, con el fin de que sea mas facil de entender y de mantener. Se tiene los controladores, repositorios, rutas y inicializacion del servidor. Se orienta a una arquitectura por capas.
 
 
 ## opcionalmente - si quiere mostrar resultados o pantallazos 
+
+![Imagen de ejemplo 1](./images/ejemple-1-telematica.png)
+Ejemplo de la ejecucion de tracker con el docker compose en donde se evidencia la ejecucion y levantamiento del tracker
+![Imagen de ejemplo 2](./images/ejemplo-2-telematica.png)
+Ejemplo de la ejecucion de peer con el docker compose en donde se evidencia la ejecucion y levantamiento del peer, ademas se evidencia la conexion del peer al tracker y la indexacion de los archivos del peer. Tambien cada peer obtiene un identificador unico. `peerIdentifier`.
+![Imagen de ejemplo 2.1](./images/ejemplo-2-1-telematica.png)
+Aqui se puede ver los loguers del login y indexacion cuando se hizo el levantamiento de los 4 peers, se puede notar como el tracker asigna un id unico a cada peer y como el tracker indexa los archivos de cada peer.
+Podemos notar la presencia de 4 peers en la red P2P. Tambien podemos notar que cada archivo tiene relacionado un peer en donde se encuentra, mas adelante veremos como cambia esto cuando otro peer descarga un mismo archivo
+
+![Imagen de ejemplo 3](./images/ejemplo-3-telematica.png)
+En este ejemplo se puede notar la busqueda de un archivo haciendo uso de Postman, en donde el flujo de proceso es el siguiente:
+1. Se hace una peticion al peer desde postman para buscar un archivo, en este caso se busca el archivo `qJe1TXQT`.
+2. El peer recibe la peticion y manda la busqueda al tracker para que le informe quien contiene este archivo. 
+3. En la parte inferior derecha de la imagen se puede ver como el tracker recibe la busqueda y responde con una lista vacia de urls de peers.
+4. El peer recibe la respuesta del tracker y responde con un mensaje de que no se encontro el archivo.
+
+![Imagen de ejemplo 4](./images/ejemplo-4-telematica.png)
+En este ejemplo se puede notar la busqueda de un archivo haciendo uso de Postman, en donde el flujo de proceso es el siguiente:
+1. Se hace una peticion al peer desde postman para buscar un archivo, en este caso se busca el archivo `Jox5cRmo`.
+2. El peer recibe la peticion y manda la busqueda al tracker para que le informe quien contiene este archivo.
+3. El tracker le responde al peer con una lista de urls de peers que contienen el archivo.
+4. El peer escoje un peer de la lista y le hace una peticion para descargar el archivo. En la parte inferior de la imagen se observa de color verde el peer3 quien quiere desscargar el archivo del peer1. 
+5. El peer1 recibe la peticion, obtiene el archivo de su sistema y lo envia al peer3. En la parte inferior de la imagen se observa de color verde el peer3 quien recibe el archivo del peer1.
+6. El peer3 recibe el archivo y lo guarda en su sistema de archivos como se puede notar, ahora este peer tiene 3 archivos. Los 2 archivos iniciales y el archivo que descargo del peer1.
+7. El peer3 vuelve a indexar sus archivos al tracker para que los demas peers sepan que archivos tiene.
+8. En la parte superior derecha de la imagene se puede observar que ahora el archivo `Jox5cRmo` tiene relacion tanto con el peer1 como con el peer3, dado que el peer3 descargo el archivo del peer1.
+9. Por ultimo, en la respuesta que recibe el postman se informa que el archivo fue descargado con exito y de donde se descargo.
+
+
+
 
 
 # 5. otra información que considere relevante para esta actividad.
 
 # referencias:
-<debemos siempre reconocer los créditos de partes del código que reutilizaremos, así como referencias a youtube, o referencias bibliográficas utilizadas para desarrollar el proyecto o la actividad>
 
-## url de donde tomo info para desarrollar este proyecto
+## Url de donde tomo info para desarrollar este proyecto
 * https://blog.logrocket.com/creating-a-crud-api-with-node-express-and-grpc/
 * https://blog.logrocket.com/communicating-between-node-js-microservices-with-grpc/
 * https://grpc.io/docs/languages/node/basics/
+* https://www.youtube.com/watch?v=bKFMS5C4CG0
+* https://docs.docker.com/compose/

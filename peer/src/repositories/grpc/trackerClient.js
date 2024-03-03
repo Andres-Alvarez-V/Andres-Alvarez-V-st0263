@@ -11,9 +11,8 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const Tracker = grpc.loadPackageDefinition(packageDefinition).Tracker;
-console.log(process.env.TRACKER_IP)
 const client = new Tracker(
-    "172.20.0.6:5000",
+    process.env.TRACKER_IP,
     grpc.credentials.createInsecure()
 );
 

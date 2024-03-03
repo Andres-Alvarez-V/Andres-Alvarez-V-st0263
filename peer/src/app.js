@@ -51,9 +51,23 @@ server.on('listening', async () => {
   app.set("peerIdentifier", response.peerIdentifier);
 });
 
-
 // Manejar señal SIGINT (CTRL+C)
 process.on('SIGINT', async () => {
+  console.log('Caught interrupt signal');
+  const peerIdentifier = app.get("peerIdentifier");
+  if (peerIdentifier) {
+    await trackerClient.logout({ peerIdentifier });
+    console.log('Logged out successfully');
+  }
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+
+// Manejar señal SIGTERM  
+process.on('SIGTERM', async () => {
   console.log('Caught interrupt signal');
   const peerIdentifier = app.get("peerIdentifier");
   if (peerIdentifier) {
